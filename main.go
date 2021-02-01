@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/shurcooL/githubv4"
@@ -37,7 +38,7 @@ func main() {
 	}
 
 	langMap := map[string]int{}
-	mostlyLangName := ""
+	mostlyLangName := []string{}
 	mostlyLangNum := 0
 	private, public := 0, 0
 	u.RepositoryCommitInfo = make([]*RepositoryCommitInfo, len(u.UserData.User.Repositories.Edges))
@@ -62,10 +63,15 @@ func main() {
 		}
 
 		langMap[langName]++
-		if langMap[langName] > mostlyLangNum {
-			mostlyLangName = langName
-			mostlyLangNum = langMap[langName]
+		if langName != "Other" {
+			if langMap[langName] > mostlyLangNum {
+				mostlyLangName = []string{langName}
+				mostlyLangNum = langMap[langName]
+			} else if langMap[langName] == mostlyLangNum {
+				mostlyLangName = append(mostlyLangName, langName)
+			}
 		}
+
 		if node.IsPrivate {
 			private++
 		} else {
@@ -81,7 +87,7 @@ func main() {
 	content += GenCommitsInfo(u)
 
 	// Section: I Mostly code in `LANG`
-	content += GenMostly(u, langMap, mostlyLangName)
+	content += GenMostly(u, langMap, strings.Join(mostlyLangName, "、"))
 
 	if u.WakaTimeAPIKey != "" {
 		// Section: Recently I Spent My Time On
