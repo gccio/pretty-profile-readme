@@ -50,7 +50,7 @@ func main() {
 			"last":   githubv4.Int(100),
 			"id":     u.UserInfo.Viewer.ID.(string),
 			"branch": githubv4.String(node.DefaultBranchRef.Name),
-			"since":  githubv4.GitTimestamp{Time: GetFirstDateOfWeek()},
+			"since":  githubv4.GitTimestamp{Time: GetDateSevenDaysAgo()},
 		}); err != nil {
 			panic(err)
 		}
@@ -84,7 +84,7 @@ func main() {
 	content += GenMostly(u, langMap, mostlyLangName)
 
 	if u.WakaTimeAPIKey != "" {
-		// Section: This Week I Spent My Time On
+		// Section: Recently I Spent My Time On
 		content += GenWakaTimeStats(u)
 	}
 
@@ -98,15 +98,10 @@ func main() {
 	fmt.Println("build readme successful!")
 }
 
-func GetFirstDateOfWeek() time.Time {
+func GetDateSevenDaysAgo() time.Time {
 	now := time.Now()
 
-	offset := int(time.Monday - now.Weekday())
-	if offset > 0 {
-		offset = -6
-	}
-
-	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, timeLocation).AddDate(0, 0, offset)
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, timeLocation).AddDate(0, 0, -6)
 }
 
 func GenGithubData(u *user, public, private int) string {
@@ -161,7 +156,7 @@ func GenMostly(u *user, langMap map[string]int, mostlyLangName string) string {
 func GenWakaTimeStats(u *user) string {
 	content := ""
 	content += "\n"
-	content += fmt.Sprintf("**📊 This Week I Spent My Time On**\n")
+	content += fmt.Sprintf("**📊 Recently I Spent My Time On**\n")
 	content += fmt.Sprintf("```text\n")
 	for _, project := range u.WakaTimeStats.Data.Projects {
 		if project.Name == "Unknown Project" {
