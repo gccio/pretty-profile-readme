@@ -86,6 +86,29 @@ type RepositoryConnection struct {
 	}
 }
 
+type IssueComments struct {
+	Edges []struct {
+		Node struct {
+			BodyHTML githubv4.HTML `graphql:"bodyHTML"`
+			URL      githubv4.URI
+			Issue    struct {
+				Title githubv4.String
+			}
+		}
+	}
+}
+
+type Issues struct {
+	Edges []struct {
+		Node struct {
+			URL       githubv4.URI
+			Title     githubv4.String
+			UpdatedAt githubv4.DateTime
+			State     githubv4.IssueState
+		}
+	}
+}
+
 type RepositoryCommitInfo struct {
 	Repository struct {
 		Name githubv4.String
@@ -127,6 +150,8 @@ type UserData struct {
 		ContributionsCollection ContributionsCollection `graphql:"contributionsCollection(from: $from)"`
 		IsHireable              githubv4.Boolean
 		Repositories            RepositoryConnection `graphql:"repositories(last: 100, isFork: false)"`
+		Issues                  Issues               `graphql:"issues(last: 5, filterBy: {since: $sinceOneMonth}, orderBy: {direction:ASC, field: UPDATED_AT})"`
+		IssueComments           IssueComments        `graphql:"issueComments(last: 10, orderBy: {direction:ASC, field: UPDATED_AT})"`
 	} `graphql:"user(login: $login)"`
 }
 
@@ -156,6 +181,7 @@ func (u *user) WriteReadMe(content, commitmsg string) error {
 	content = reg.ReplaceAllString(oldContent, content)
 
 	ioutil.WriteFile(os.Getenv("HOME")+"/README_DEBUG.md", []byte(content), 0755)
+	// 	return nil
 	branch := "main"
 	arr := strings.Split(*c.URL, "?")
 	if len(arr) > 2 {

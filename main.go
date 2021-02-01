@@ -74,6 +74,8 @@ func main() {
 	}
 
 	content := ""
+	content += GenIssues(u)
+
 	// Section: My Github Data
 	content += GenGithubData(u, public, private)
 
@@ -96,6 +98,22 @@ func main() {
 
 	fmt.Println(content)
 	fmt.Println("build readme successful!")
+}
+
+func GenIssues(u *user) string {
+	content := ""
+	content += "\n"
+
+	for _, edge := range u.UserData.User.Issues.Edges {
+		node := edge.Node
+		fmt.Println(node.Title, node.UpdatedAt)
+		content = fmt.Sprintf(
+			"%s\n\n",
+			fmt.Sprintf("[%s](%s)", string(node.Title), node.URL.String()),
+		) + content
+	}
+
+	return content
 }
 
 func GetFirstDateOfWeek() time.Time {
